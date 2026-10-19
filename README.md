@@ -54,6 +54,52 @@ API docs: <http://127.0.0.1:8000/docs>
 python -m streamlit run dashboard\streamlit_app.py
 ```
 
+## API quick reference
+
+The FastAPI service is available at `http://127.0.0.1:8000`. Interactive
+documentation is available at <http://127.0.0.1:8000/docs>.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Check service and database status. |
+| `GET` | `/schema` | Inspect the database schema provided to the SQL generator. |
+| `POST` | `/ask` | Generate, validate, and run a query for a natural-language question. |
+| `GET` | `/history?limit=30` | Retrieve recent queries; `limit` is capped at 100. |
+| `DELETE` | `/history` | Clear query history without deleting business data. |
+
+Example request from PowerShell:
+
+```powershell
+$response = Invoke-RestMethod `
+    -Uri http://127.0.0.1:8000/ask `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body (@{ question = "What were the top 5 products by revenue?" } | ConvertTo-Json)
+
+$response.answer
+$response.sql
+$response.rows
+```
+
+The response includes the generated SQL, result columns and rows, row count,
+latency, and a plain-English answer. Invalid or unsafe queries are rejected.
+
+## Configuration
+
+Copy `.env.example` to `.env` in the project root to customize these settings.
+The application reads environment variables directly; if your shell does not
+load `.env` files automatically, set the variables in the shell before starting
+the API.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `OLLAMA_MODEL` | `qwen3:1.7b` | Local model used to generate SQL and summarize results. |
+| `OLLAMA_HOST` | `http://localhost:11434` | Ollama server URL. |
+| `DATABASE_PATH` | `data/sales.db` | SQLite database path; relative paths resolve from the project root. |
+| `MAX_RESULT_ROWS` | `200` | Maximum number of rows returned from a query. |
+| `QUERY_TIMEOUT_SECONDS` | `5` | Maximum execution time for a database query. |
+| `API_BASE_URL` | `http://127.0.0.1:8000` | API URL used by the Streamlit dashboard. |
+
 ## Screenshots
 
 | Dashboard | Database explorer |
@@ -91,6 +137,18 @@ Optional API evaluation (requires FastAPI and Ollama running):
 ```powershell
 python evaluation\evaluate.py
 ```
+
+## Troubleshooting
+
+- **Ollama connection errors:** Start Ollama, verify `OLLAMA_HOST`, and make
+  sure the configured model is installed (for example, run `ollama pull
+  qwen3:1.7b`).
+- **Database not found:** Check `DATABASE_PATH`. The app expects the sample
+  `data\sales.db`; only run `python -m app.init_db` if you intend to create or
+  replace the sample database.
+- **Port already in use:** Start Uvicorn on another port with
+  `python -m uvicorn app.main:app --reload --port 8001`, then set
+  `API_BASE_URL` to `http://127.0.0.1:8001` before starting Streamlit.
 
 ## Safety
 
