@@ -1,0 +1,34 @@
+[
+  {
+    "question": "Which product generated the highest revenue?",
+    "expected_columns": [
+      "product_name",
+      "revenue"
+    ],
+    "category": "aggregation"
+  },
+  {
+    "question": "Which city has the most customers?",
+    "expected_columns": [
+      "city",
+      "customer_count"
+    ],
+    "category": "aggregation"
+  },
+  {
+    "question": "How many orders are there for each order status?",
+    "expected_columns": [
+      "status",
+      "order_count"
+    ],
+    "category": "aggregation"
+  },
+  {
+    "question": "Show monthly revenue for 2025.",
+    "expected_columns": [
+      "month",
+      "revenue"
+    ],
+    "category": "time_series"
+  }
+]
